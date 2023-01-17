@@ -18,9 +18,9 @@ private Transaction transaction = null;
     public void createUsersTable() {
         try (Session session = Util.getFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
-            session.createNativeQuery("CREATE TABLE IF NOT EXISTS users " +
-                    "(id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), lastname VARCHAR(255), age INT)",
-                    User.class).executeUpdate();
+            session.createSQLQuery("CREATE TABLE IF NOT EXISTS users " +
+                    "(id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), lastname VARCHAR(255), age INT)"
+            ).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -33,7 +33,7 @@ private Transaction transaction = null;
     public void dropUsersTable() {
         try (Session session = Util.getFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
-            session.createNativeQuery("DROP TABLE IF EXISTS users", User.class).executeUpdate();
+            session.createSQLQuery("DROP TABLE IF EXISTS users").executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -47,7 +47,7 @@ private Transaction transaction = null;
     public void saveUser(String name, String lastName, byte age) {
         try (Session session = Util.getFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
-            session.persist(new User(name, lastName, age));
+            session.save(new User(name, lastName, age));
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -62,7 +62,7 @@ private Transaction transaction = null;
     public void removeUserById(long id) {
         try (Session session = Util.getFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
-            session.remove(session.get(User.class, id));
+            session.delete(session.get(User.class, id));
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -74,11 +74,11 @@ private Transaction transaction = null;
 
     @Override
     public List<User> getAllUsers() {
-        List<User> users = new ArrayList<>();
+       List<User> allUsers = new ArrayList<>();
         try (Session session = Util.getFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
-            users = session.createNativeQuery("SELECT * FROM users", User.class).getResultList();
-           for (User u : users) {
+            allUsers = session.createQuery("from User", User.class).getResultList();
+           for (User u : allUsers) {
                System.out.println(u);
            }
             transaction.commit();
@@ -88,15 +88,14 @@ private Transaction transaction = null;
             }
             e.printStackTrace();
         }
-        return users;
-
+        return allUsers;
     }
 
     @Override
     public void cleanUsersTable() {
         try (Session session = Util.getFactory().getCurrentSession()) {
             transaction = session.beginTransaction();
-            session.createNativeQuery("DELETE FROM users", User.class).executeUpdate();
+            session.createSQLQuery("DELETE FROM users").executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
