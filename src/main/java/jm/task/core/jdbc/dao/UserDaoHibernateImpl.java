@@ -2,12 +2,14 @@ package jm.task.core.jdbc.dao;
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoHibernateImpl implements UserDao {
+    private final SessionFactory factory = Util.getFactory();
 private Transaction transaction = null;
     public UserDaoHibernateImpl() {
 
@@ -16,7 +18,7 @@ private Transaction transaction = null;
 
     @Override
     public void createUsersTable() {
-        try (Session session = Util.getFactory().getCurrentSession()) {
+        try (Session session = factory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("CREATE TABLE IF NOT EXISTS users " +
                     "(id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), lastname VARCHAR(255), age INT)"
@@ -31,7 +33,7 @@ private Transaction transaction = null;
     }
     @Override
     public void dropUsersTable() {
-        try (Session session = Util.getFactory().getCurrentSession()) {
+        try (Session session = factory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.createSQLQuery("DROP TABLE IF EXISTS users").executeUpdate();
             transaction.commit();
@@ -45,7 +47,7 @@ private Transaction transaction = null;
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        try (Session session = Util.getFactory().getCurrentSession()) {
+        try (Session session = factory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.save(new User(name, lastName, age));
             transaction.commit();
@@ -60,7 +62,7 @@ private Transaction transaction = null;
 
     @Override
     public void removeUserById(long id) {
-        try (Session session = Util.getFactory().getCurrentSession()) {
+        try (Session session = factory.getCurrentSession()) {
             transaction = session.beginTransaction();
             session.delete(session.get(User.class, id));
             transaction.commit();
@@ -75,12 +77,9 @@ private Transaction transaction = null;
     @Override
     public List<User> getAllUsers() {
        List<User> allUsers = new ArrayList<>();
-        try (Session session = Util.getFactory().getCurrentSession()) {
+        try (Session session = factory.getCurrentSession()) {
             transaction = session.beginTransaction();
             allUsers = session.createQuery("from User", User.class).getResultList();
-           for (User u : allUsers) {
-               System.out.println(u);
-           }
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -93,9 +92,9 @@ private Transaction transaction = null;
 
     @Override
     public void cleanUsersTable() {
-        try (Session session = Util.getFactory().getCurrentSession()) {
+        try (Session session = factory.getCurrentSession()) {
             transaction = session.beginTransaction();
-            session.createSQLQuery("DELETE FROM users").executeUpdate();
+            session.createQuery("delete User").executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
